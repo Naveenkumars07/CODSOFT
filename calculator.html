@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Standalone Calculator</title>
+    
+    <style>
+        /* --- CSS STYLING --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .calculator {
+            background-color: #1e293b;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 340px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .display-container {
+            margin-bottom: 20px;
+        }
+
+        #screen {
+            width: 100%;
+            height: 80px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            color: #38bdf8;
+            text-align: right;
+            padding: 20px;
+            font-size: 2.2rem;
+            font-weight: 600;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            height: 64px;
+            border: none;
+            border-radius: 14px;
+            background: #334155;
+            color: #f1f5f9;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:hover {
+            background: #475569;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Operator Colors */
+        .btn-op {
+            background: #0a66c2;
+            color: white;
+        }
+        .btn-op:hover { background: #08529d; }
+
+        /* Functional Colors */
+        .btn-clear {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-clear:hover { background: #dc2626; }
+
+        .btn-equal {
+            background: #10b981;
+            color: white;
+            grid-row: span 2; /* Spans two rows vertically */
+            height: auto;
+        }
+        .btn-equal:hover { background: #059669; }
+
+        .btn-zero {
+            grid-column: span 2; /* Spans two columns horizontally */
+        }
+
+        /* Subtle indicator for the screen */
+        .display-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <div class="display-container">
+            <span class="display-label">Standard Calculator</span>
+            <input type="text" id="screen" readonly value="0">
+        </div>
+        
+        <div class="buttons-grid">
+            <!-- Row 1 -->
+            <button class="btn btn-clear" onclick="clearScreen()">C</button>
+            <button class="btn btn-op" onclick="appendValue('/')">÷</button>
+            <button class="btn btn-op" onclick="appendValue('*')">×</button>
+            <button class="btn btn-op" onclick="backspace()">DEL</button>
+            
+            <!-- Row 2 -->
+            <button class="btn" onclick="appendValue('7')">7</button>
+            <button class="btn" onclick="appendValue('8')">8</button>
+            <button class="btn" onclick="appendValue('9')">9</button>
+            <button class="btn btn-op" onclick="appendValue('-')">-</button>
+            
+            <!-- Row 3 -->
+            <button class="btn" onclick="appendValue('4')">4</button>
+            <button class="btn" onclick="appendValue('5')">5</button>
+            <button class="btn" onclick="appendValue('6')">6</button>
+            <button class="btn btn-op" onclick="appendValue('+')">+</button>
+            
+            <!-- Row 4 -->
+            <button class="btn" onclick="appendValue('1')">1</button>
+            <button class="btn" onclick="appendValue('2')">2</button>
+            <button class="btn" onclick="appendValue('3')">3</button>
+            <button class="btn btn-equal" onclick="calculate()">=</button>
+            
+            <!-- Row 5 -->
+            <button class="btn btn-zero" onclick="appendValue('0')">0</button>
+            <button class="btn" onclick="appendValue('.')">.</button>
+        </div>
+    </div>
+
+    <script>
+        /* --- JAVASCRIPT LOGIC --- */
+        const screen = document.getElementById('screen');
+
+        function appendValue(value) {
+            // If screen shows 0 or an Error, replace it with the new value
+            if (screen.value === "0" || screen.value === "Error") {
+                screen.value = value;
+            } else {
+                screen.value += value;
+            }
+        }
+
+        function clearScreen() {
+            screen.value = "0";
+        }
+
+        function backspace() {
+            if (screen.value.length > 1) {
+                screen.value = screen.value.slice(0, -1);
+            } else {
+                screen.value = "0";
+            }
+        }
+
+        function calculate() {
+            try {
+                // eval() processes the string expression (e.g., "12+5*2")
+                const result = eval(screen.value);
+                
+                // Handle cases like 0.1 + 0.2 to avoid long decimals
+                screen.value = Number.isInteger(result) ? result : parseFloat(result.toFixed(8));
+            } catch (err) {
+                screen.value = "Error";
+                // Reset after 1.5 seconds so user can continue
+                setTimeout(clearScreen, 1500);
+            }
+        }
+
+        // Add keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= 0 && e.key <= 9) appendValue(e.key);
+            if (e.key === '.') appendValue('.');
+            if (e.key === '+') appendValue('+');
+            if (e.key === '-') appendValue('-');
+            if (e.key === '*') appendValue('*');
+            if (e.key === '/') appendValue('/');
+            if (e.key === 'Enter' || e.key === '=') calculate();
+            if (e.key === 'Backspace') backspace();
+            if (e.key === 'Escape') clearScreen();
+        });
+    </script>
+</body>
+</html>
